@@ -1,19 +1,26 @@
 #include "raylib.h"
+#define TITLE "Raylib Example"
 
 int main()
 {
     // Initialize the window
-    InitWindow(800, 600, "Raylib Example");
+    SetConfigFlags(FLAG_WINDOW_RESIZABLE);
+    InitWindow(640, 480, TITLE);
+    SetTargetFPS(30);
 
-    // Set the target frames per second
-    SetTargetFPS(60);
+    // Center the window on the screen
+    const int Monitor = GetCurrentMonitor();
+    const int MonitorWidth = GetMonitorWidth(Monitor);
+    const int MonitorHeight = GetMonitorHeight(Monitor);
+    SetWindowSize(MonitorWidth / 2, MonitorHeight / 2);
+    SetWindowPosition(MonitorWidth / 4, MonitorHeight / 4);
 
-    // Main game loop
+    // Game loop
     while (!WindowShouldClose())
     {
         // Clear the screen with a background color
         BeginDrawing();
-        ClearBackground(RAYWHITE);
+        ClearBackground(BLACK);
 
         // Draw a rectangle
         DrawRectangle(100, 100, 200, 100, BLUE);
@@ -28,8 +35,7 @@ int main()
         EndDrawing();
     }
 
-    // Close the window and clean up resources
+    // Clean up resources
     CloseWindow();
-
     return 0;
 }
