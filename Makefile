@@ -3,10 +3,12 @@ TARGET := program
 RAYLIB = external/raylib/src
 RAYLIB_LIB = $(RAYLIB)/libraylib.a
 
-CC = gcc
+CC := gcc
 CFLAGS = -Wall -Wextra -std=c99 -Iinclude -I$(RAYLIB)
 CLIBS := -Llib $(RAYLIB_LIB)
-REMOVE :=
+
+REMOVE := rm -f
+
 ifeq ($(OS),Windows_NT)
 	TARGET := $(TARGET).exe
 	CLIBS := $(CLIBS) -lopengl32 -lgdi32 -lwinmm
@@ -16,9 +18,9 @@ else
 
 	endif
 	ifeq ($(shell uname -s),Darwin)
+		CC := clang
 		CLIBS := $(CLIBS) -framework CoreVideo -framework IOKit -framework Cocoa -framework OpenGL $(RAYLIB_LIB)
 	endif
-	REMOVE := rm -f
 endif
 
 run: build

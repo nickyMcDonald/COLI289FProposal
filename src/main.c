@@ -1,13 +1,13 @@
-#include "raylib.h"
-#define TITLE "Raylib Example"
+#include "real_player.h"
+#include "computer_player.h"
 
 int main()
 {
     // Initialize the window
     SetConfigFlags(FLAG_WINDOW_RESIZABLE);
-    InitWindow(640, 480, TITLE);
+    InitWindow(640, 480, "Raylib Example");
     SetTargetFPS(30);
-
+    
     // Center the window on the screen
     const int Monitor = GetCurrentMonitor();
     const int MonitorWidth = GetMonitorWidth(Monitor);
@@ -16,22 +16,16 @@ int main()
     SetWindowPosition(MonitorWidth / 4, MonitorHeight / 4);
 
     // Game loop
+    Game game = {0};
     while (!WindowShouldClose())
     {
-        // Clear the screen with a background color
+        // Recalculate the rectangular area where the game will be drawn
+        area_update(GetScreenWidth(), GetScreenHeight());
+
+        // Clear the screen and draw the game
         BeginDrawing();
         ClearBackground(BLACK);
-
-        // Draw a rectangle
-        DrawRectangle(100, 100, 200, 100, BLUE);
-
-        // Draw a circle
-        DrawCircle(400, 300, 50, RED);
-
-        // Draw text
-        DrawText("Hello, Raylib!", 300, 500, 20, BLACK);
-
-        // End drawing
+        game_redraw(&game);
         EndDrawing();
     }
 
