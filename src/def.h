@@ -1,11 +1,9 @@
 #pragma once
 #include <raylib.h>
+#include <string.h>
 
-// Width of the game grid
+// Width and height of the game grid
 #define GAME_WIDTH 3
-
-// Height of the game grid
-#define GAME_HEIGHT GAME_WIDTH
 
 // Color used for drawing the game elements
 #define GAME_COLOR WHITE
@@ -37,14 +35,27 @@ typedef struct Point
 } Point;
 
 /// @brief Function pointer type for player actions, the player is assumed to play 'X'
-typedef Point (*Play)(const State** cells);
+typedef Point (*Play)(const State cells[GAME_WIDTH][GAME_WIDTH]);
 
 /// @brief Structure representing the game state
 typedef struct Game
 {
     Play playX;
     Play playO;
-    State cells[GAME_WIDTH][GAME_HEIGHT];
+    State cells[GAME_WIDTH][GAME_WIDTH];
     bool isOTurn;
     bool isOver;
 } Game;
+
+/// @brief Structure representing a square area
+typedef struct Area
+{
+    // Horizontal position
+    unsigned short x;
+
+    // Vertical position
+    unsigned short y;
+
+    // Height and width of the area
+    unsigned short width;
+} Area;
