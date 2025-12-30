@@ -1,5 +1,5 @@
 #pragma once
-#include "def.h"
+#include "rules.h"
 
 /// @brief Reset the game state
 /// @param game The game to reset
@@ -8,10 +8,10 @@
 void game_reset(Game* game, Play play1, Play play2)
 {
     // Randomly assign players
-    const bool firstIsPlay1 = GetRandomValue(0, 1);
-    game->playX = firstIsPlay1 ? play1 : play2;
-    game->playO = firstIsPlay1 ? play2 : play1;
-
+    const State One = GetRandomValue(STATE_X, STATE_O);
+    game->plays[One] = play1;
+    game->plays[One ^ STATE_XO] = play2;
+    
     // Clear the game board
     for (int y = 0; y < GAME_WIDTH; y++)
     {
@@ -20,10 +20,10 @@ void game_reset(Game* game, Play play1, Play play2)
             game->cells[x][y] = STATE_NONE;
         }
     }
-
+    
     // Randomly decide who starts
-    game->isOTurn = GetRandomValue(0, 1);
-    game->isOver = false;
+    game->current = GetRandomValue(STATE_X, STATE_O);
+    game->winner = STATE_NONE;
 }
 
 /// @brief Get the rectangular area where the game is drawn
@@ -33,6 +33,32 @@ Area* game_area_get()
     // Static area to return
     static Area area = {0};
     return &area;
+}
+
+/// @brief Let the player play their turn in the game
+/// @param game The game state
+void game_play(Game* game)
+{
+    // Do nothing if the game is over
+    if (game->winner != STATE_NONE)
+    {
+        return;
+    }
+
+    // Call the player's play function
+    const Point move = game->plays[game->current](game->current, game->cells);
+    
+    // Evaluate the move
+    State result;
+    game->winner = evaluate_move(game->cells, move, game->current, &result);
+
+    // If the move was valid, update the game state
+    if (result & STATE_XO)
+    {
+        game->cells[move.x][move.y] = result;
+        game->current ^= STATE_XO;
+    }
+    
 }
 
 /// @brief Update the rectangular area where the game is drawn
@@ -104,108 +130,6 @@ void game_redraw(const Game* game)
             default:
                 break;
             }
-        }
-    }
-}
-
-/// @brief Let the player play their turn in the game
-/// @param game The game state
-void game_play_player(Game* game)
-{
-    // Do nothing if the game is over
-    if (game->isOver)
-    {
-        return;
-    }
-
-    // Possibly swap the game state
-    static State cells[GAME_WIDTH][GAME_WIDTH] = {0};
-
-    // Swap cell states
-    for (int y = 0; y < GAME_WIDTH; y++)
-    {
-        for (int x = 0; x < GAME_WIDTH; x++)
-        {
-            switch (game->cells[x][y])
-            {
-            case STATE_X:
-                cells[x][y] = game->isOTurn ? STATE_O : STATE_X;
-                break;
-            case STATE_O:
-                cells[x][y] = game->isOTurn ? STATE_X : STATE_O;
-                break;
-            default:
-                cells[x][y] = game->cells[x][y];
-                break;
-            }
-        }
-    }
-
-    // Call the player's play function
-    const Point move = game->isOTurn ? game->playO(cells) : game->playX(cells);
-
-    // Validate the move
-    if ((move.x < GAME_WIDTH) && (move.y < GAME_WIDTH) && (game->cells[move.x][move.y] == STATE_NONE))
-    {
-        game->cells[move.x][move.y] = game->isOTurn ? STATE_O : STATE_X;
-        game->isOTurn = !game->isOTurn;
-
-        // Check for draw
-        bool isDraw = true;
-        for (int y = 0; y < GAME_WIDTH; y++)
-        {
-            for (int x = 0; x < GAME_WIDTH; x++)
-            {
-                if (game->cells[x][y] == STATE_NONE)
-                {
-                    isDraw = false;
-                }
-            }
-        }
-        if (isDraw)
-        {
-            game->isOver = true;
-        }
-
-        // Check for straight win
-        for (int i = 0; i < GAME_WIDTH; i++)
-        {
-            bool isWinX = game->cells[i][0] != STATE_NONE;
-            bool isWinY = game->cells[0][i] != STATE_NONE;
-            for (int j = 1; j < GAME_WIDTH; j++)
-            {
-                if (game->cells[i][0] != game->cells[i][j])
-                {
-                    isWinX = false;
-                }
-                if (game->cells[0][i] != game->cells[j][i])
-                {
-                    isWinY = false;
-                }
-            }
-            if (isWinX || isWinY)
-            {
-                game->isOver = true;
-            }
-        }
-
-        // Check for diagonal win
-        bool isWinDown = game->cells[0][0] != STATE_NONE;
-        bool isWinUp = game->cells[0][GAME_WIDTH - 1] != STATE_NONE;
-        for (int i = 1; i < GAME_WIDTH; i++)
-        {
-            if (game->cells[i][i] != game->cells[0][0])
-            {
-                isWinDown = false;
-            }
-            if (game->cells[i][GAME_WIDTH - 1 - i] != game->cells[0][GAME_WIDTH - 1])
-            {
-                isWinUp = false;
-            }
-        }
-        if (isWinDown || isWinUp)
-        {
-            game->isOver = true;
         }
     }
 }

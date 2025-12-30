@@ -15,13 +15,19 @@
 typedef enum State
 {
     // Empty state for a cell
-    STATE_NONE,
+    STATE_NONE = 0,
     
     // X marked cell
-    STATE_X,
+    STATE_X = 1,
     
     // O marked cell
-    STATE_O,
+    STATE_O = 2,
+
+    // Mask for both X and O states
+    STATE_XO = STATE_X | STATE_O,
+
+    // Draw state indicating a tie
+    STATE_DRAW = 4,
 } State;
 
 /// @brief Structure representing a point in 2D space
@@ -35,16 +41,22 @@ typedef struct Point
 } Point;
 
 /// @brief Function pointer type for player actions, the player is assumed to play 'X'
-typedef Point (*Play)(const State cells[GAME_WIDTH][GAME_WIDTH]);
+typedef Point (*Play)(State player, const State cells[GAME_WIDTH][GAME_WIDTH]);
 
 /// @brief Structure representing the game state
 typedef struct Game
 {
-    Play playX;
-    Play playO;
+    // Array of player functions indexed by State
+    Play plays[STATE_O + 1];
+
+    // Current state of the game cells
     State cells[GAME_WIDTH][GAME_WIDTH];
-    bool isOTurn;
-    bool isOver;
+
+    // The current turn player
+    State current;
+
+    // The game winner state
+    State winner;
 } Game;
 
 /// @brief Structure representing a square area

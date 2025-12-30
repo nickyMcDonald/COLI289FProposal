@@ -36,10 +36,10 @@ int main()
         EndDrawing();
 
         // Let players play their turns
-        game_play_player(&game);
+        game_play(&game);
 
         // Reset the game if it's over and the mouse button is pressed
-        if (game.isOver && IsMouseButtonPressed(MOUSE_BUTTON))
+        if ((game.winner != STATE_NONE) && IsMouseButtonPressed(MOUSE_BUTTON))
         {
             game_reset(&game, player1, player2);
         }
