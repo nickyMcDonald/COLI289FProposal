@@ -154,7 +154,10 @@ void game_redraw(const Game* game)
         }
     }
 
-    // Draw the current dice roll
-    DrawRectangle(0, 0, Radius, Radius, BLACK);
-    DrawText(TextFormat("%d", game->rolls[game->current]), 0, 0, Radius, WHITE);
+    if (game->rolls[game->current] > 0)
+    {
+        // Draw the current dice roll
+        DrawRectangle(0, 0, Radius, Radius, BLACK);
+        DrawText(TextFormat("%d", game->rolls[game->current]), 0, 0, Radius, WHITE);
+    }
 }
