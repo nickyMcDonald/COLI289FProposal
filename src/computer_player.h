@@ -14,7 +14,7 @@ Point computer_player_play(const Game* game)
     // Copy the current game
     Game opponent = *game;
     opponent.current ^= STATE_XO;
-    opponent.rolls[game->current] = 0;
+    opponent.rolls[opponent.current] = 0;
     
     Point move;
     unsigned char maxWeight = 0;
