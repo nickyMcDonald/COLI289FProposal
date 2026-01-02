@@ -2,12 +2,11 @@
 #include "game.h"
 
 /// @brief Let a real player play their turn by clicking on the game grid
-/// @param player The current player
-/// @param cells The current game state
-Point real_player_play(State player, const State cells[GAME_WIDTH][GAME_WIDTH])
+/// @param game The current state of the game
+/// @result The point where the player wishes to play
+Point real_player_play(const Game* game)
 {
-    (void)player;   // Unused parameter
-    (void)cells;    // Unused parameter
+    (void)game; // Unused parameter
 
     // Check for mouse input
     if (IsMouseButtonPressed(MOUSE_BUTTON))

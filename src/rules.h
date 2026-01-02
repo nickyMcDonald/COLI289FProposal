@@ -64,21 +64,31 @@ State check_win(const State cells[GAME_WIDTH][GAME_WIDTH], State player)
 }
 
 /// @brief Evaluate a proposed move and determine if it results in a win or draw
-/// @param cells The current game state
+/// @param game The current game state
 /// @param move The proposed move
 /// @param player The player making the move
 /// @param result Output parameter to hold the result cell state
 /// @return The winning state if the move results in a win, draw if the move results in a draw, otherwise STATE_NONE
-State evaluate_move(const State cells[GAME_WIDTH][GAME_WIDTH], Point move, State player, State* result)
+State evaluate_move(const Game* game, Point move, State* result)
 {
     // Default to no result and get player symbol
     *result = STATE_NONE;
 
+    // Validate roll is valid for the move
+    const Point From = game->positions[game->current];
+    const int Distance = abs(move.x - From.x) + abs(move.y - From.y);
+    const int OddDistance = Distance & 1;
+    const int OddRoll = game->rolls[game->current] & 1;
+    if ((game->rolls[game->current] > 0) && ((OddDistance ^ OddRoll) || (Distance > game->rolls[game->current])))
+    {
+        return STATE_NONE;
+    }
+
     // Validate the move
-    if ((move.x < GAME_WIDTH) && (move.y < GAME_WIDTH) && (cells[move.x][move.y] == STATE_NONE))
+    if ((move.x < GAME_WIDTH) && (move.y < GAME_WIDTH) && (game->cells[move.x][move.y] == STATE_NONE))
     {
         // Set the result to the player's symbol
-        *result = player;
+        *result = game->current;
 
         // Create a copy of the cells with the proposed move applied
         static State c[GAME_WIDTH][GAME_WIDTH] = {0};
@@ -86,11 +96,35 @@ State evaluate_move(const State cells[GAME_WIDTH][GAME_WIDTH], Point move, State
         {
             for (int x = 0; x < GAME_WIDTH; x++)
             {
-                c[x][y] = cells[x][y];
+                c[x][y] = game->cells[x][y];
             }
         }
-        c[move.x][move.y] = player;
-        return check_win(c, player);
+        c[move.x][move.y] = *result;
+        return check_win(c, *result);
     }
     return STATE_NONE;
+}
+
+bool move_available(const Game* game)
+{
+    for (Point move = {0, 0}; move.y < GAME_WIDTH; move.y++)
+    {
+        for (move.x = 0; move.x < GAME_WIDTH; move.x++)
+        {
+            static State result;
+            evaluate_move(game, move, &result);
+            if (result != STATE_NONE)
+            {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+/// @brief Rolls the dice
+/// @return The dice roll value
+unsigned char roll_dice()
+{
+    return GetRandomValue(0, 5) * 3 / 5 + 1;
 }

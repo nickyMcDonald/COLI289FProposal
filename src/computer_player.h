@@ -2,18 +2,19 @@
 #include "game.h"
 
 /// @brief Let a computer player play their turn by selecting a cell
-/// @param player The current player
-/// @param cells The current game state
-Point computer_player_play(State player, const State cells[GAME_WIDTH][GAME_WIDTH])
+/// @param game The current state of the game
+/// @result The point where the player wishes to play
+Point computer_player_play(const Game* game)
 {
     // Get the current call stack base
     static bool nowInner = true;
     bool isInner = nowInner;
     nowInner = false;
 
-    // Copy the current cells
-    State c[GAME_WIDTH][GAME_WIDTH] = {0};
-    memcpy(c, cells, sizeof(c));
+    // Copy the current game
+    Game opponent = *game;
+    opponent.current ^= STATE_XO;
+    opponent.rolls[game->current] = 0;
     
     Point move;
     unsigned char maxWeight = 0;
@@ -25,34 +26,32 @@ Point computer_player_play(State player, const State cells[GAME_WIDTH][GAME_WIDT
             // The favorably of the move
             unsigned char moveWeight;
 
-            // Save the cell state
-            const State Old = c[move.x][move.y];
-
-            switch (evaluate_move(cells, move, player, &c[move.x][move.y]))
+            switch (evaluate_move(game, move, &opponent.cells[move.x][move.y]))
             {
             case STATE_X:
-                moveWeight = (player == STATE_X) ? 254 : 1; // A win by X
+                moveWeight = (game->current == STATE_X) ? 254 : 1; // A win by X
                 break;
             case STATE_O:
-                moveWeight = (player == STATE_O) ? 254 : 1; // A win by O
+                moveWeight = (game->current == STATE_O) ? 254 : 1; // A win by O
                 break;
             case STATE_DRAW:
                 moveWeight = 127; // A draw between both players
                 break;
             default:
-                if (c[move.x][move.y] == STATE_NONE)
+                if (opponent.cells[move.x][move.y] == STATE_NONE)
                 {
                     moveWeight = 0; // Failed move, avoid this move
                     break;
                 }
+                opponent.positions[game->current] = move;
 
                 // Gather enemy's best move weight
-                moveWeight = 255 - computer_player_play(player ^ STATE_XO, c).x;
+                moveWeight = 255 - computer_player_play(&opponent).x;
                 break;
             }
 
             // Restore current cells and update weights
-            c[move.x][move.y] = Old;
+            opponent.cells[move.x][move.y] = game->cells[move.x][move.y];
             maxWeight = (moveWeight > maxWeight) ? moveWeight : maxWeight;
             moves[move.x][move.y] = moveWeight;
         }

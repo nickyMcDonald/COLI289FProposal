@@ -24,6 +24,19 @@ void game_reset(Game* game, Play play1, Play play2)
     // Randomly decide who starts
     game->current = GetRandomValue(STATE_X, STATE_O);
     game->winner = STATE_NONE;
+
+    // Assign middle as starting point
+    for (int i = 0; i < (int)(sizeof(game->positions) / sizeof(*game->positions)); i++)
+    {
+        game->positions[i].x = 1;
+        game->positions[i].y = 1;
+    }
+
+    for (int i = 0; i < (int)(sizeof(game->rolls) / sizeof(*game->rolls)); i++)
+    {
+        game->rolls[i] = 0;
+    }
+    
 }
 
 /// @brief Get the rectangular area where the game is drawn
@@ -46,19 +59,27 @@ void game_play(Game* game)
     }
 
     // Call the player's play function
-    const Point move = game->plays[game->current](game->current, game->cells);
+    const Point move = game->plays[game->current](game);
     
     // Evaluate the move
     State result;
-    game->winner = evaluate_move(game->cells, move, game->current, &result);
+    game->winner = evaluate_move(game, move, &result);
 
     // If the move was valid, update the game state
     if (result & STATE_XO)
     {
         game->cells[move.x][move.y] = result;
-        game->current ^= STATE_XO;
+        if (game->winner == STATE_NONE)
+        {
+            game->positions[game->current] = move;
+            game->rolls[game->current] = roll_dice();
+            game->current ^= STATE_XO;
+            while (!move_available(game))
+            {
+                game->rolls[game->current] = roll_dice();
+            }
+        }
     }
-    
 }
 
 /// @brief Update the rectangular area where the game is drawn
@@ -132,4 +153,8 @@ void game_redraw(const Game* game)
             }
         }
     }
+
+    // Draw the current dice roll
+    DrawRectangle(0, 0, Radius, Radius, BLACK);
+    DrawText(TextFormat("%d", game->rolls[game->current]), 0, 0, Radius, WHITE);
 }

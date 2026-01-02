@@ -11,6 +11,9 @@
 // Mouse button used for player input
 #define MOUSE_BUTTON MOUSE_BUTTON_LEFT
 
+// Return the value which is greatest
+#define abs(x) (((x) < 0) ? -(x) : (x))
+
 /// @brief Enumeration representing the state of a cell
 typedef enum State
 {
@@ -40,8 +43,11 @@ typedef struct Point
     unsigned char y;
 } Point;
 
+/// @brief Forward declaration of game
+typedef struct Game Game;
+
 /// @brief Function pointer type for player actions, the player is assumed to play 'X'
-typedef Point (*Play)(State player, const State cells[GAME_WIDTH][GAME_WIDTH]);
+typedef Point (*Play)(const Game* game);
 
 /// @brief Structure representing the game state
 typedef struct Game
@@ -57,6 +63,12 @@ typedef struct Game
 
     // The game winner state
     State winner;
+
+    // The players last played positions
+    Point positions[STATE_O + 1];
+
+    // The current dice rolls
+    unsigned char rolls[STATE_O + 1];
 } Game;
 
 /// @brief Structure representing a square area
